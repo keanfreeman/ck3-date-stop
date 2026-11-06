@@ -1,0 +1,289 @@
+﻿# Date Stop (CK3) - scripted effects. Root scope is the player character.
+# State lives in character variables (the GUI can only read those):
+#   dsc_py/pm/pd         date picker
+#   dsc_aN, dsc_aN_y/m/d alarm slot N (key = year*10000 + month*100 + day)
+#   dsc_ticking          the daily check event is scheduled
+#   dsc_pause_pending    an alarm fired; the GUI pauses the game and clears it
+
+dsc_today = {
+	set_variable = { name = dsc_ty value = current_year }
+	set_variable = { name = dsc_tm value = current_month }
+	set_variable = { name = dsc_td value = current_day }
+	set_variable = {
+		name = dsc_tkey
+		value = {
+			value = current_year
+			multiply = 10000
+			add = { value = current_month multiply = 100 }
+			add = current_day
+		}
+	}
+}
+
+dsc_dim = {
+	set_variable = { name = dsc_dim value = 31 }
+	if = {
+		limit = { OR = { var:dsc_pm = 4 var:dsc_pm = 6 var:dsc_pm = 9 var:dsc_pm = 11 } }
+		set_variable = { name = dsc_dim value = 30 }
+	}
+	if = {
+		limit = { var:dsc_pm = 2 }
+		set_variable = { name = dsc_dim value = 28 }
+	}
+}
+
+# Carries month/day over and under their limits (CK3 has no leap days).
+dsc_normalize = {
+	while = {
+		limit = { var:dsc_pm > 12 }
+		change_variable = { name = dsc_pm subtract = 12 }
+		change_variable = { name = dsc_py add = 1 }
+	}
+	while = {
+		limit = { var:dsc_pm < 1 }
+		change_variable = { name = dsc_pm add = 12 }
+		change_variable = { name = dsc_py subtract = 1 }
+	}
+	dsc_dim = yes
+	while = {
+		limit = { var:dsc_pd > var:dsc_dim }
+		change_variable = { name = dsc_pd subtract = var:dsc_dim }
+		change_variable = { name = dsc_pm add = 1 }
+		if = {
+			limit = { var:dsc_pm > 12 }
+			set_variable = { name = dsc_pm value = 1 }
+			change_variable = { name = dsc_py add = 1 }
+		}
+		dsc_dim = yes
+	}
+	while = {
+		limit = { var:dsc_pd < 1 }
+		change_variable = { name = dsc_pm subtract = 1 }
+		if = {
+			limit = { var:dsc_pm < 1 }
+			set_variable = { name = dsc_pm value = 12 }
+			change_variable = { name = dsc_py subtract = 1 }
+		}
+		dsc_dim = yes
+		change_variable = { name = dsc_pd add = var:dsc_dim }
+	}
+	if = {
+		limit = { var:dsc_py < 1 }
+		set_variable = { name = dsc_py value = 1 }
+	}
+}
+
+dsc_pick_today = {
+	dsc_today = yes
+	set_variable = { name = dsc_py value = var:dsc_ty }
+	set_variable = { name = dsc_pm value = var:dsc_tm }
+	set_variable = { name = dsc_pd value = var:dsc_td }
+}
+
+# Panel opened: start the picker at today unless it was used already.
+dsc_open = {
+	if = {
+		limit = { NOT = { has_variable = dsc_py } }
+		dsc_pick_today = yes
+	}
+}
+
+dsc_pick_add = {
+	change_variable = { name = dsc_py add = $Y$ }
+	change_variable = { name = dsc_pm add = $M$ }
+	change_variable = { name = dsc_pd add = $D$ }
+	dsc_normalize = yes
+}
+
+dsc_try_slot = {
+	if = {
+		limit = {
+			NOT = { has_variable = dsc_added }
+			NOT = { has_variable = dsc_a$N$ }
+		}
+		set_variable = { name = dsc_a$N$ value = var:dsc_key }
+		set_variable = { name = dsc_a$N$_y value = var:dsc_py }
+		set_variable = { name = dsc_a$N$_m value = var:dsc_pm }
+		set_variable = { name = dsc_a$N$_d value = var:dsc_pd }
+		if = {
+			limit = { has_variable = dsc_pr }
+			set_variable = { name = dsc_a$N$_r value = var:dsc_pr }
+		}
+		set_variable = dsc_added
+	}
+}
+
+dsc_ensure_ticking = {
+	if = {
+		limit = { NOT = { has_variable = dsc_ticking } }
+		set_variable = dsc_ticking
+		trigger_event = { id = date_stop.1 days = 1 }
+	}
+}
+
+dsc_add = {
+	set_variable = {
+		name = dsc_key
+		value = {
+			value = var:dsc_py
+			multiply = 10000
+			add = { value = var:dsc_pm multiply = 100 }
+			add = var:dsc_pd
+		}
+	}
+	remove_variable = dsc_added
+	dsc_try_slot = { N = 1 }
+	dsc_try_slot = { N = 2 }
+	dsc_try_slot = { N = 3 }
+	dsc_try_slot = { N = 4 }
+	dsc_try_slot = { N = 5 }
+	dsc_try_slot = { N = 6 }
+	remove_variable = dsc_added
+	dsc_ensure_ticking = yes
+}
+
+dsc_remove_slot = {
+	remove_variable = dsc_a$N$
+	remove_variable = dsc_a$N$_y
+	remove_variable = dsc_a$N$_m
+	remove_variable = dsc_a$N$_d
+	remove_variable = dsc_a$N$_r
+}
+
+dsc_clear_all = {
+	dsc_remove_slot = { N = 1 }
+	dsc_remove_slot = { N = 2 }
+	dsc_remove_slot = { N = 3 }
+	dsc_remove_slot = { N = 4 }
+	dsc_remove_slot = { N = 5 }
+	dsc_remove_slot = { N = 6 }
+	remove_variable = dsc_pr
+}
+
+# Remembers the reason of a firing slot as dsc_fr_<key> so the popup can list it.
+dsc_note_reason = {
+	if = { limit = { var:dsc_a$N$_r ?= flag:pregnancy } set_variable = dsc_fr_pregnancy }
+	if = { limit = { var:dsc_a$N$_r ?= flag:adulthood } set_variable = dsc_fr_adulthood }
+	if = { limit = { var:dsc_a$N$_r ?= flag:education } set_variable = dsc_fr_education }
+	if = { limit = { var:dsc_a$N$_r ?= flag:marriage } set_variable = dsc_fr_marriage }
+	if = { limit = { var:dsc_a$N$_r ?= flag:birthday } set_variable = dsc_fr_birthday }
+	if = { limit = { var:dsc_a$N$_r ?= flag:succession } set_variable = dsc_fr_succession }
+	if = { limit = { var:dsc_a$N$_r ?= flag:scheme } set_variable = dsc_fr_scheme }
+	if = { limit = { var:dsc_a$N$_r ?= flag:hook } set_variable = dsc_fr_hook }
+	if = { limit = { var:dsc_a$N$_r ?= flag:prison } set_variable = dsc_fr_prison }
+	if = { limit = { var:dsc_a$N$_r ?= flag:faction } set_variable = dsc_fr_faction }
+	if = { limit = { var:dsc_a$N$_r ?= flag:stress } set_variable = dsc_fr_stress }
+	if = { limit = { var:dsc_a$N$_r ?= flag:inspiration } set_variable = dsc_fr_inspiration }
+	if = { limit = { var:dsc_a$N$_r ?= flag:truce } set_variable = dsc_fr_truce }
+	if = { limit = { var:dsc_a$N$_r ?= flag:war } set_variable = dsc_fr_war }
+	if = { limit = { var:dsc_a$N$_r ?= flag:siege } set_variable = dsc_fr_siege }
+	if = { limit = { var:dsc_a$N$_r ?= flag:army } set_variable = dsc_fr_army }
+	if = { limit = { var:dsc_a$N$_r ?= flag:travel } set_variable = dsc_fr_travel }
+	if = { limit = { var:dsc_a$N$_r ?= flag:raid } set_variable = dsc_fr_raid }
+	if = { limit = { var:dsc_a$N$_r ?= flag:feast } set_variable = dsc_fr_feast }
+	if = { limit = { var:dsc_a$N$_r ?= flag:tournament } set_variable = dsc_fr_tournament }
+	if = { limit = { var:dsc_a$N$_r ?= flag:hunt } set_variable = dsc_fr_hunt }
+	if = { limit = { var:dsc_a$N$_r ?= flag:pilgrimage } set_variable = dsc_fr_pilgrimage }
+	if = { limit = { var:dsc_a$N$_r ?= flag:trip } set_variable = dsc_fr_trip }
+	if = { limit = { var:dsc_a$N$_r ?= flag:activity } set_variable = dsc_fr_activity }
+	if = { limit = { var:dsc_a$N$_r ?= flag:council } set_variable = dsc_fr_council }
+	if = { limit = { var:dsc_a$N$_r ?= flag:decision } set_variable = dsc_fr_decision }
+	if = { limit = { var:dsc_a$N$_r ?= flag:building } set_variable = dsc_fr_building }
+	if = { limit = { var:dsc_a$N$_r ?= flag:project } set_variable = dsc_fr_project }
+	if = { limit = { var:dsc_a$N$_r ?= flag:tax } set_variable = dsc_fr_tax }
+	if = { limit = { var:dsc_a$N$_r ?= flag:gold } set_variable = dsc_fr_gold }
+	if = { limit = { var:dsc_a$N$_r ?= flag:epidemic } set_variable = dsc_fr_epidemic }
+	if = { limit = { var:dsc_a$N$_r ?= flag:struggle } set_variable = dsc_fr_struggle }
+	if = { limit = { var:dsc_a$N$_r ?= flag:inspect } set_variable = dsc_fr_inspect }
+	if = { limit = { var:dsc_a$N$_r ?= flag:save } set_variable = dsc_fr_save }
+	if = { limit = { var:dsc_a$N$_r ?= flag:rest } set_variable = dsc_fr_rest }
+	if = { limit = { var:dsc_a$N$_r ?= flag:other } set_variable = dsc_fr_other }
+}
+
+# Fires every alarm that is due (key <= today's key).
+dsc_fire_slot = {
+	if = {
+		limit = {
+			has_variable = dsc_a$N$
+			var:dsc_a$N$ <= var:dsc_tkey
+		}
+		dsc_note_reason = { N = $N$ }
+		dsc_remove_slot = { N = $N$ }
+		set_variable = dsc_fired
+	}
+}
+
+dsc_fire_due = {
+	remove_variable = dsc_fired
+	remove_variable = dsc_fr_pregnancy
+	remove_variable = dsc_fr_adulthood
+	remove_variable = dsc_fr_education
+	remove_variable = dsc_fr_marriage
+	remove_variable = dsc_fr_birthday
+	remove_variable = dsc_fr_succession
+	remove_variable = dsc_fr_scheme
+	remove_variable = dsc_fr_hook
+	remove_variable = dsc_fr_prison
+	remove_variable = dsc_fr_faction
+	remove_variable = dsc_fr_stress
+	remove_variable = dsc_fr_inspiration
+	remove_variable = dsc_fr_truce
+	remove_variable = dsc_fr_war
+	remove_variable = dsc_fr_siege
+	remove_variable = dsc_fr_army
+	remove_variable = dsc_fr_travel
+	remove_variable = dsc_fr_raid
+	remove_variable = dsc_fr_feast
+	remove_variable = dsc_fr_tournament
+	remove_variable = dsc_fr_hunt
+	remove_variable = dsc_fr_pilgrimage
+	remove_variable = dsc_fr_trip
+	remove_variable = dsc_fr_activity
+	remove_variable = dsc_fr_council
+	remove_variable = dsc_fr_decision
+	remove_variable = dsc_fr_building
+	remove_variable = dsc_fr_project
+	remove_variable = dsc_fr_tax
+	remove_variable = dsc_fr_gold
+	remove_variable = dsc_fr_epidemic
+	remove_variable = dsc_fr_struggle
+	remove_variable = dsc_fr_inspect
+	remove_variable = dsc_fr_save
+	remove_variable = dsc_fr_rest
+	remove_variable = dsc_fr_other
+	dsc_fire_slot = { N = 1 }
+	dsc_fire_slot = { N = 2 }
+	dsc_fire_slot = { N = 3 }
+	dsc_fire_slot = { N = 4 }
+	dsc_fire_slot = { N = 5 }
+	dsc_fire_slot = { N = 6 }
+}
+
+# Hands the alarms (and the daily check) from scope:dsc_from to this character.
+dsc_copy_slot = {
+	if = {
+		limit = { scope:dsc_from = { has_variable = dsc_a$N$ } }
+		set_variable = { name = dsc_a$N$ value = scope:dsc_from.var:dsc_a$N$ }
+		set_variable = { name = dsc_a$N$_y value = scope:dsc_from.var:dsc_a$N$_y }
+		set_variable = { name = dsc_a$N$_m value = scope:dsc_from.var:dsc_a$N$_m }
+		set_variable = { name = dsc_a$N$_d value = scope:dsc_from.var:dsc_a$N$_d }
+		if = {
+			limit = { scope:dsc_from = { has_variable = dsc_a$N$_r } }
+			set_variable = { name = dsc_a$N$_r value = scope:dsc_from.var:dsc_a$N$_r }
+		}
+	}
+}
+
+dsc_inherit_alarms = {
+	if = {
+		limit = { scope:dsc_from ?= { has_variable = dsc_ticking } }
+		dsc_copy_slot = { N = 1 }
+		dsc_copy_slot = { N = 2 }
+		dsc_copy_slot = { N = 3 }
+		dsc_copy_slot = { N = 4 }
+		dsc_copy_slot = { N = 5 }
+		dsc_copy_slot = { N = 6 }
+		remove_variable = dsc_ticking
+		dsc_ensure_ticking = yes
+	}
+}

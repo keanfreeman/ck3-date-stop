@@ -1,0 +1,388 @@
+﻿# Date Stop (CK3): a button at the bottom right opens a panel to set dates the game pauses on.
+# Created at game start by gui/scripted_widgets/dsc_widgets.txt, so no vanilla file is replaced.
+
+widget = {
+	name = "dsc_root"
+	size = { 100% 100% }
+	layer = top
+	alwaystransparent = yes
+	visible = "[And( GetPlayer.IsValid, Not( IsPauseMenuShown ) )]"
+
+	### Auto-pause. The daily event sets dsc_pause_pending when an alarm fires.
+	widget = {
+		name = "dsc_autopause"
+		size = { 1 1 }
+		alwaystransparent = yes
+
+		state = {
+			name = dsc_do_pause
+			trigger_when = "[And( And( GetScriptedGui('dsc_pause_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End ), Not( IsGamePaused ) ), Not( GetVariableSystem.Exists('dsc_pausing') ) )]"
+			duration = 0.01
+			on_start = "[GetVariableSystem.Set('dsc_pausing', 'true')]"
+			on_start = "[OnPause]"
+			on_start = "[GetScriptedGui('dsc_pause_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+		}
+		state = {
+			name = dsc_clear_if_already_paused
+			trigger_when = "[And( GetScriptedGui('dsc_pause_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End ), IsGamePaused )]"
+			duration = 0.01
+			on_start = "[GetScriptedGui('dsc_pause_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+		}
+		state = {
+			name = dsc_reset_guard
+			trigger_when = "[Not( GetScriptedGui('dsc_pause_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End ) )]"
+			duration = 0.01
+			on_start = "[GetVariableSystem.Clear('dsc_pausing')]"
+		}
+	}
+
+	### Icon in the time bar, left of the date. Adjust position x to move it.
+	button_icon = {
+		name = "dsc_button"
+		parentanchor = bottom|right
+		position = { -420 1 }
+		size = { 32 32 }
+		texture = "gfx/interface/icons/flat_icons/time.dds"
+		tooltip = "DSC_BUTTON_TT"
+		using = tooltip_ne
+		onclick = "[GetVariableSystem.Toggle('dsc_panel_open')]"
+	}
+
+	### Panel
+	widget = {
+		name = "dsc_panel"
+		visible = "[GetVariableSystem.Exists('dsc_panel_open')]"
+		parentanchor = bottom|right
+		widgetanchor = bottom|right
+		position = { -20 -70 }
+		size = { 400 100 }
+		filter_mouse = all
+		alwaystransparent = no
+
+		background = {
+			using = Background_Area_Border_Solid
+			margin = { -10 -10 }
+		}
+
+		state = {
+			name = _show
+			on_start = "[GetScriptedGui('dsc_open_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+		}
+
+		flowcontainer = {
+			direction = vertical
+			resizeparent = yes
+			ignoreinvisible = yes
+			margin = { 15 0 }
+			margin_top = 10
+			margin_bottom = 12
+			minimumsize = { 370 -1 }
+			spacing = 6
+
+			text_single = { text = "DSC_TITLE" }
+			text_single = { text = "DSC_TODAY" }
+
+			### Date picker
+			flowcontainer = {
+				direction = vertical
+				spacing = 4
+				flowcontainer = {
+					direction = horizontal
+					spacing = 4
+					text_single = { text = "DSC_YEAR" min_width = 60 align = nobaseline }
+					button_standard = { size = { 36 24 } text = "DSC_DN_BIG" onclick = "[GetScriptedGui('dsc_y_dn10_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" }
+					button_standard = { size = { 30 24 } text = "DSC_DN" onclick = "[GetScriptedGui('dsc_y_dn1_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" }
+					text_single = { min_width = 56 align = center text = "[GetPlayer.MakeScope.Var('dsc_py').GetValue|0]" }
+					button_standard = { size = { 30 24 } text = "DSC_UP" onclick = "[GetScriptedGui('dsc_y_up1_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" }
+					button_standard = { size = { 36 24 } text = "DSC_UP_BIG" onclick = "[GetScriptedGui('dsc_y_up10_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" }
+				}
+				flowcontainer = {
+					direction = horizontal
+					spacing = 4
+					text_single = { text = "DSC_MONTH" min_width = 60 align = nobaseline }
+					button_standard = { size = { 30 24 } text = "DSC_DN" onclick = "[GetScriptedGui('dsc_m_dn1_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" }
+					text_single = { min_width = 56 align = center text = "[GetPlayer.MakeScope.Var('dsc_pm').GetValue|0]" }
+					button_standard = { size = { 30 24 } text = "DSC_UP" onclick = "[GetScriptedGui('dsc_m_up1_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" }
+				}
+				flowcontainer = {
+					direction = horizontal
+					spacing = 4
+					text_single = { text = "DSC_DAY" min_width = 60 align = nobaseline }
+					button_standard = { size = { 36 24 } text = "DSC_DN_BIG" onclick = "[GetScriptedGui('dsc_d_dn5_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" }
+					button_standard = { size = { 30 24 } text = "DSC_DN" onclick = "[GetScriptedGui('dsc_d_dn1_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" }
+					text_single = { min_width = 56 align = center text = "[GetPlayer.MakeScope.Var('dsc_pd').GetValue|0]" }
+					button_standard = { size = { 30 24 } text = "DSC_UP" onclick = "[GetScriptedGui('dsc_d_up1_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" }
+					button_standard = { size = { 36 24 } text = "DSC_UP_BIG" onclick = "[GetScriptedGui('dsc_d_up5_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" }
+				}
+			}
+
+			text_single = { text = "DSC_QUICK" }
+			flowcontainer = {
+				direction = horizontal
+				spacing = 4
+				button_standard = { size = { 60 24 } text = "DSC_TODAY_BTN" tooltip = "DSC_TODAY_BTN_TT" onclick = "[GetScriptedGui('dsc_today_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" }
+				button_standard = { size = { 44 24 } text = "DSC_1W" tooltip = "DSC_ADD_TT" onclick = "[GetScriptedGui('dsc_add_1w_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" }
+				button_standard = { size = { 44 24 } text = "DSC_1M" tooltip = "DSC_ADD_TT" onclick = "[GetScriptedGui('dsc_add_1m_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" }
+				button_standard = { size = { 44 24 } text = "DSC_3M" tooltip = "DSC_ADD_TT" onclick = "[GetScriptedGui('dsc_add_3m_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" }
+				button_standard = { size = { 44 24 } text = "DSC_6M" tooltip = "DSC_ADD_TT" onclick = "[GetScriptedGui('dsc_add_6m_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" }
+			}
+			flowcontainer = {
+				direction = horizontal
+				spacing = 4
+				button_standard = { size = { 44 24 } text = "DSC_1Y" tooltip = "DSC_ADD_TT" onclick = "[GetScriptedGui('dsc_add_1y_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" }
+				button_standard = { size = { 44 24 } text = "DSC_5Y" tooltip = "DSC_ADD_TT" onclick = "[GetScriptedGui('dsc_add_5y_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" }
+				button_standard = { size = { 44 24 } text = "DSC_10Y" tooltip = "DSC_ADD_TT" onclick = "[GetScriptedGui('dsc_add_10y_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" }
+			}
+
+			### Reason
+			flowcontainer = {
+				direction = horizontal
+				spacing = 6
+				text_single = { text = "DSC_REASON_LABEL" min_width = 60 align = nobaseline }
+				button_standard = {
+					size = { 230 24 }
+					tooltip = "DSC_REASON_TT"
+					onclick = "[GetVariableSystem.Toggle('dsc_reason_open')]"
+					text = "[SelectLocalization( GetScriptedGui('dsc_has_reason_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End ), 'DSC_REASON_SHOWN', 'DSC_REASON_NONE' )]"
+				}
+				button_cancel_small = {
+					size = { 24 24 }
+					tooltip = "DSC_REASON_CLEAR_TT"
+					enabled = "[GetScriptedGui('dsc_has_reason_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+					onclick = "[GetScriptedGui('dsc_reason_none_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+				}
+			}
+
+			### Actions
+			flowcontainer = {
+				direction = horizontal
+				spacing = 6
+				button_standard = {
+					size = { 110 26 }
+					text = "DSC_SET"
+					tooltip = "DSC_SET_TT"
+					enabled = "[GetScriptedGui('dsc_add_sgui').IsValid( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+					onclick = "[GetScriptedGui('dsc_add_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+				}
+				button_standard = {
+					size = { 110 26 }
+					text = "DSC_CLEAR"
+					tooltip = "DSC_CLEAR_TT"
+					enabled = "[GetScriptedGui('dsc_clear_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+					onclick = "[GetScriptedGui('dsc_clear_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+				}
+				button_standard = {
+					size = { 90 26 }
+					text = "DSC_CLOSE"
+					onclick = "[GetVariableSystem.Clear('dsc_panel_open')]"
+				}
+			}
+
+			### Alarm list
+			text_single = {
+				visible = "[GetScriptedGui('dsc_has_any_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+				text = "DSC_LIST_HEADER"
+			}
+			text_single = {
+				visible = "[Not( GetScriptedGui('dsc_has_any_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End ) )]"
+				text = "DSC_LIST_EMPTY"
+			}
+			flowcontainer = {
+				direction = vertical
+				spacing = 2
+				ignoreinvisible = yes
+				flowcontainer = {
+					direction = horizontal
+					visible = "[GetScriptedGui('dsc_slot1_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+					spacing = 6
+					text_single = {
+						min_width = 90
+						text = "[GetPlayer.MakeScope.Var('dsc_a1_y').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a1_m').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a1_d').GetValue|0]"
+					}
+					text_single = {
+						min_width = 190
+						visible = "[GetScriptedGui('dsc_slot1_has_reason_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+						text = "[Localize( Concatenate( 'DSC_REASON_', GetPlayer.MakeScope.Var('dsc_a1_r').GetFlagName ) )]"
+					}
+					button_cancel_small = {
+						size = { 24 24 }
+						tooltip = "DSC_DELETE_TT"
+						onclick = "[GetScriptedGui('dsc_slot1_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+					}
+				}
+				flowcontainer = {
+					direction = horizontal
+					visible = "[GetScriptedGui('dsc_slot2_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+					spacing = 6
+					text_single = {
+						min_width = 90
+						text = "[GetPlayer.MakeScope.Var('dsc_a2_y').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a2_m').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a2_d').GetValue|0]"
+					}
+					text_single = {
+						min_width = 190
+						visible = "[GetScriptedGui('dsc_slot2_has_reason_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+						text = "[Localize( Concatenate( 'DSC_REASON_', GetPlayer.MakeScope.Var('dsc_a2_r').GetFlagName ) )]"
+					}
+					button_cancel_small = {
+						size = { 24 24 }
+						tooltip = "DSC_DELETE_TT"
+						onclick = "[GetScriptedGui('dsc_slot2_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+					}
+				}
+				flowcontainer = {
+					direction = horizontal
+					visible = "[GetScriptedGui('dsc_slot3_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+					spacing = 6
+					text_single = {
+						min_width = 90
+						text = "[GetPlayer.MakeScope.Var('dsc_a3_y').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a3_m').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a3_d').GetValue|0]"
+					}
+					text_single = {
+						min_width = 190
+						visible = "[GetScriptedGui('dsc_slot3_has_reason_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+						text = "[Localize( Concatenate( 'DSC_REASON_', GetPlayer.MakeScope.Var('dsc_a3_r').GetFlagName ) )]"
+					}
+					button_cancel_small = {
+						size = { 24 24 }
+						tooltip = "DSC_DELETE_TT"
+						onclick = "[GetScriptedGui('dsc_slot3_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+					}
+				}
+				flowcontainer = {
+					direction = horizontal
+					visible = "[GetScriptedGui('dsc_slot4_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+					spacing = 6
+					text_single = {
+						min_width = 90
+						text = "[GetPlayer.MakeScope.Var('dsc_a4_y').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a4_m').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a4_d').GetValue|0]"
+					}
+					text_single = {
+						min_width = 190
+						visible = "[GetScriptedGui('dsc_slot4_has_reason_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+						text = "[Localize( Concatenate( 'DSC_REASON_', GetPlayer.MakeScope.Var('dsc_a4_r').GetFlagName ) )]"
+					}
+					button_cancel_small = {
+						size = { 24 24 }
+						tooltip = "DSC_DELETE_TT"
+						onclick = "[GetScriptedGui('dsc_slot4_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+					}
+				}
+				flowcontainer = {
+					direction = horizontal
+					visible = "[GetScriptedGui('dsc_slot5_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+					spacing = 6
+					text_single = {
+						min_width = 90
+						text = "[GetPlayer.MakeScope.Var('dsc_a5_y').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a5_m').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a5_d').GetValue|0]"
+					}
+					text_single = {
+						min_width = 190
+						visible = "[GetScriptedGui('dsc_slot5_has_reason_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+						text = "[Localize( Concatenate( 'DSC_REASON_', GetPlayer.MakeScope.Var('dsc_a5_r').GetFlagName ) )]"
+					}
+					button_cancel_small = {
+						size = { 24 24 }
+						tooltip = "DSC_DELETE_TT"
+						onclick = "[GetScriptedGui('dsc_slot5_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+					}
+				}
+				flowcontainer = {
+					direction = horizontal
+					visible = "[GetScriptedGui('dsc_slot6_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+					spacing = 6
+					text_single = {
+						min_width = 90
+						text = "[GetPlayer.MakeScope.Var('dsc_a6_y').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a6_m').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a6_d').GetValue|0]"
+					}
+					text_single = {
+						min_width = 190
+						visible = "[GetScriptedGui('dsc_slot6_has_reason_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+						text = "[Localize( Concatenate( 'DSC_REASON_', GetPlayer.MakeScope.Var('dsc_a6_r').GetFlagName ) )]"
+					}
+					button_cancel_small = {
+						size = { 24 24 }
+						tooltip = "DSC_DELETE_TT"
+						onclick = "[GetScriptedGui('dsc_slot6_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+					}
+				}
+			}
+		}
+	}
+
+	### Reason picker, left of the main panel
+	widget = {
+		name = "dsc_reason_panel"
+		visible = "[And( GetVariableSystem.Exists('dsc_panel_open'), GetVariableSystem.Exists('dsc_reason_open') )]"
+		parentanchor = bottom|right
+		widgetanchor = bottom|right
+		position = { -440 -70 }
+		size = { 400 100 }
+		filter_mouse = all
+		alwaystransparent = no
+
+		background = {
+			using = Background_Area_Border_Solid
+			margin = { -10 -10 }
+		}
+
+		flowcontainer = {
+			direction = vertical
+			resizeparent = yes
+			margin = { 12 8 }
+			spacing = 6
+			text_single = { text = "DSC_REASON_PICK" }
+			flowcontainer = {
+				direction = horizontal
+				spacing = 4
+				flowcontainer = {
+					direction = vertical
+					spacing = 3
+					button_standard = { size = { 124 24 } text = "DSC_REASON_pregnancy" onclick = "[GetScriptedGui('dsc_reason_pregnancy_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_adulthood" onclick = "[GetScriptedGui('dsc_reason_adulthood_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_education" onclick = "[GetScriptedGui('dsc_reason_education_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_marriage" onclick = "[GetScriptedGui('dsc_reason_marriage_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_birthday" onclick = "[GetScriptedGui('dsc_reason_birthday_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_succession" onclick = "[GetScriptedGui('dsc_reason_succession_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_scheme" onclick = "[GetScriptedGui('dsc_reason_scheme_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_hook" onclick = "[GetScriptedGui('dsc_reason_hook_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_prison" onclick = "[GetScriptedGui('dsc_reason_prison_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_faction" onclick = "[GetScriptedGui('dsc_reason_faction_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_stress" onclick = "[GetScriptedGui('dsc_reason_stress_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_inspiration" onclick = "[GetScriptedGui('dsc_reason_inspiration_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+				}
+				flowcontainer = {
+					direction = vertical
+					spacing = 3
+					button_standard = { size = { 124 24 } text = "DSC_REASON_truce" onclick = "[GetScriptedGui('dsc_reason_truce_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_war" onclick = "[GetScriptedGui('dsc_reason_war_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_siege" onclick = "[GetScriptedGui('dsc_reason_siege_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_army" onclick = "[GetScriptedGui('dsc_reason_army_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_travel" onclick = "[GetScriptedGui('dsc_reason_travel_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_raid" onclick = "[GetScriptedGui('dsc_reason_raid_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_feast" onclick = "[GetScriptedGui('dsc_reason_feast_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_tournament" onclick = "[GetScriptedGui('dsc_reason_tournament_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_hunt" onclick = "[GetScriptedGui('dsc_reason_hunt_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_pilgrimage" onclick = "[GetScriptedGui('dsc_reason_pilgrimage_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_trip" onclick = "[GetScriptedGui('dsc_reason_trip_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_activity" onclick = "[GetScriptedGui('dsc_reason_activity_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+				}
+				flowcontainer = {
+					direction = vertical
+					spacing = 3
+					button_standard = { size = { 124 24 } text = "DSC_REASON_council" onclick = "[GetScriptedGui('dsc_reason_council_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_decision" onclick = "[GetScriptedGui('dsc_reason_decision_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_building" onclick = "[GetScriptedGui('dsc_reason_building_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_project" onclick = "[GetScriptedGui('dsc_reason_project_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_tax" onclick = "[GetScriptedGui('dsc_reason_tax_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_gold" onclick = "[GetScriptedGui('dsc_reason_gold_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_epidemic" onclick = "[GetScriptedGui('dsc_reason_epidemic_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_struggle" onclick = "[GetScriptedGui('dsc_reason_struggle_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_inspect" onclick = "[GetScriptedGui('dsc_reason_inspect_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_save" onclick = "[GetScriptedGui('dsc_reason_save_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_rest" onclick = "[GetScriptedGui('dsc_reason_rest_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+					button_standard = { size = { 124 24 } text = "DSC_REASON_other" onclick = "[GetScriptedGui('dsc_reason_other_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" onclick = "[GetVariableSystem.Clear('dsc_reason_open')]" }
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,7 @@
+﻿# Alarms and the daily check follow the player to a new character (heir, character switch).
+on_player_character_change = {
+	effect = {
+		scope:previous_player_character ?= { save_scope_as = dsc_from }
+		dsc_inherit_alarms = yes
+	}
+}

@@ -1,0 +1,10 @@
+{
+  "name": "Date Stop",
+  "id": "date_stop_ck3",
+  "version": "1.0.0",
+  "supported_game_version": "1.20.*",
+  "short_description": "A button at the bottom right: pick dates and the game pauses when each one arrives.",
+  "tags": ["Utilities", "Interface"],
+  "relationships": [],
+  "game_custom_data": { "multiplayer_synchronized": true }
+}

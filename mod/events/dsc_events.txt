@@ -1,0 +1,93 @@
+﻿namespace = date_stop
+
+# Daily check on the player character. Reschedules itself every day while any alarm is queued.
+# Duplicate chains (e.g. after a player change) merge: a second run on the same day stops.
+date_stop.1 = {
+	type = character_event
+	hidden = yes
+
+	immediate = {
+		dsc_today = yes
+		if = {
+			limit = {
+				OR = {
+					NOT = { has_variable = dsc_last_tick }
+					NOT = { var:dsc_last_tick = var:dsc_tkey }
+				}
+			}
+			set_variable = { name = dsc_last_tick value = var:dsc_tkey }
+			dsc_fire_due = yes
+			if = {
+				limit = { has_variable = dsc_fired }
+				set_variable = dsc_pause_pending
+				trigger_event = { id = date_stop.2 }
+			}
+			if = {
+				limit = {
+					OR = {
+						has_variable = dsc_a1
+						has_variable = dsc_a2
+						has_variable = dsc_a3
+						has_variable = dsc_a4
+						has_variable = dsc_a5
+						has_variable = dsc_a6
+					}
+				}
+				trigger_event = { id = date_stop.1 days = 1 }
+			}
+			else = {
+				remove_variable = dsc_ticking
+			}
+		}
+	}
+}
+
+# Popup: tells you the date arrived. The GUI widget does the pausing.
+date_stop.2 = {
+	type = character_event
+	title = date_stop.2.t
+	desc = {
+		desc = date_stop.2.d
+		triggered_desc = { trigger = { has_variable = dsc_fr_pregnancy } desc = DSC_REASON_LINE_pregnancy }
+		triggered_desc = { trigger = { has_variable = dsc_fr_adulthood } desc = DSC_REASON_LINE_adulthood }
+		triggered_desc = { trigger = { has_variable = dsc_fr_education } desc = DSC_REASON_LINE_education }
+		triggered_desc = { trigger = { has_variable = dsc_fr_marriage } desc = DSC_REASON_LINE_marriage }
+		triggered_desc = { trigger = { has_variable = dsc_fr_birthday } desc = DSC_REASON_LINE_birthday }
+		triggered_desc = { trigger = { has_variable = dsc_fr_succession } desc = DSC_REASON_LINE_succession }
+		triggered_desc = { trigger = { has_variable = dsc_fr_scheme } desc = DSC_REASON_LINE_scheme }
+		triggered_desc = { trigger = { has_variable = dsc_fr_hook } desc = DSC_REASON_LINE_hook }
+		triggered_desc = { trigger = { has_variable = dsc_fr_prison } desc = DSC_REASON_LINE_prison }
+		triggered_desc = { trigger = { has_variable = dsc_fr_faction } desc = DSC_REASON_LINE_faction }
+		triggered_desc = { trigger = { has_variable = dsc_fr_stress } desc = DSC_REASON_LINE_stress }
+		triggered_desc = { trigger = { has_variable = dsc_fr_inspiration } desc = DSC_REASON_LINE_inspiration }
+		triggered_desc = { trigger = { has_variable = dsc_fr_truce } desc = DSC_REASON_LINE_truce }
+		triggered_desc = { trigger = { has_variable = dsc_fr_war } desc = DSC_REASON_LINE_war }
+		triggered_desc = { trigger = { has_variable = dsc_fr_siege } desc = DSC_REASON_LINE_siege }
+		triggered_desc = { trigger = { has_variable = dsc_fr_army } desc = DSC_REASON_LINE_army }
+		triggered_desc = { trigger = { has_variable = dsc_fr_travel } desc = DSC_REASON_LINE_travel }
+		triggered_desc = { trigger = { has_variable = dsc_fr_raid } desc = DSC_REASON_LINE_raid }
+		triggered_desc = { trigger = { has_variable = dsc_fr_feast } desc = DSC_REASON_LINE_feast }
+		triggered_desc = { trigger = { has_variable = dsc_fr_tournament } desc = DSC_REASON_LINE_tournament }
+		triggered_desc = { trigger = { has_variable = dsc_fr_hunt } desc = DSC_REASON_LINE_hunt }
+		triggered_desc = { trigger = { has_variable = dsc_fr_pilgrimage } desc = DSC_REASON_LINE_pilgrimage }
+		triggered_desc = { trigger = { has_variable = dsc_fr_trip } desc = DSC_REASON_LINE_trip }
+		triggered_desc = { trigger = { has_variable = dsc_fr_activity } desc = DSC_REASON_LINE_activity }
+		triggered_desc = { trigger = { has_variable = dsc_fr_council } desc = DSC_REASON_LINE_council }
+		triggered_desc = { trigger = { has_variable = dsc_fr_decision } desc = DSC_REASON_LINE_decision }
+		triggered_desc = { trigger = { has_variable = dsc_fr_building } desc = DSC_REASON_LINE_building }
+		triggered_desc = { trigger = { has_variable = dsc_fr_project } desc = DSC_REASON_LINE_project }
+		triggered_desc = { trigger = { has_variable = dsc_fr_tax } desc = DSC_REASON_LINE_tax }
+		triggered_desc = { trigger = { has_variable = dsc_fr_gold } desc = DSC_REASON_LINE_gold }
+		triggered_desc = { trigger = { has_variable = dsc_fr_epidemic } desc = DSC_REASON_LINE_epidemic }
+		triggered_desc = { trigger = { has_variable = dsc_fr_struggle } desc = DSC_REASON_LINE_struggle }
+		triggered_desc = { trigger = { has_variable = dsc_fr_inspect } desc = DSC_REASON_LINE_inspect }
+		triggered_desc = { trigger = { has_variable = dsc_fr_save } desc = DSC_REASON_LINE_save }
+		triggered_desc = { trigger = { has_variable = dsc_fr_rest } desc = DSC_REASON_LINE_rest }
+		triggered_desc = { trigger = { has_variable = dsc_fr_other } desc = DSC_REASON_LINE_other }
+	}
+	theme = default
+
+	option = {
+		name = date_stop.2.a
+	}
+}

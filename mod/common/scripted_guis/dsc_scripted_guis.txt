@@ -1,0 +1,422 @@
+﻿# Date Stop (CK3) - scripted GUIs. Called from gui/dsc_widget.gui with the player character as root.
+
+dsc_open_sgui = {
+	scope = character
+	effect = { dsc_open = yes }
+}
+
+dsc_today_sgui = {
+	scope = character
+	effect = { dsc_pick_today = yes }
+}
+
+# "The picked date is in the future, an alarm slot is free and it isn't a duplicate."
+dsc_add_sgui = {
+	scope = character
+	is_valid = {
+		OR = {
+			var:dsc_py > current_year
+			AND = {
+				var:dsc_py = current_year
+				OR = {
+					var:dsc_pm > current_month
+					AND = { var:dsc_pm = current_month var:dsc_pd > current_day }
+				}
+			}
+		}
+		OR = {
+			NOT = { has_variable = dsc_a1 }
+			NOT = { has_variable = dsc_a2 }
+			NOT = { has_variable = dsc_a3 }
+			NOT = { has_variable = dsc_a4 }
+			NOT = { has_variable = dsc_a5 }
+			NOT = { has_variable = dsc_a6 }
+		}
+		NOT = { AND = { has_variable = dsc_a1 var:dsc_a1_y = var:dsc_py var:dsc_a1_m = var:dsc_pm var:dsc_a1_d = var:dsc_pd } }
+		NOT = { AND = { has_variable = dsc_a2 var:dsc_a2_y = var:dsc_py var:dsc_a2_m = var:dsc_pm var:dsc_a2_d = var:dsc_pd } }
+		NOT = { AND = { has_variable = dsc_a3 var:dsc_a3_y = var:dsc_py var:dsc_a3_m = var:dsc_pm var:dsc_a3_d = var:dsc_pd } }
+		NOT = { AND = { has_variable = dsc_a4 var:dsc_a4_y = var:dsc_py var:dsc_a4_m = var:dsc_pm var:dsc_a4_d = var:dsc_pd } }
+		NOT = { AND = { has_variable = dsc_a5 var:dsc_a5_y = var:dsc_py var:dsc_a5_m = var:dsc_pm var:dsc_a5_d = var:dsc_pd } }
+		NOT = { AND = { has_variable = dsc_a6 var:dsc_a6_y = var:dsc_py var:dsc_a6_m = var:dsc_pm var:dsc_a6_d = var:dsc_pd } }
+	}
+	effect = { dsc_add = yes }
+}
+
+dsc_clear_sgui = {
+	scope = character
+	is_shown = {
+		OR = {
+			has_variable = dsc_a1
+			has_variable = dsc_a2
+			has_variable = dsc_a3
+			has_variable = dsc_a4
+			has_variable = dsc_a5
+			has_variable = dsc_a6
+			has_variable = dsc_pr
+		}
+	}
+	effect = { dsc_clear_all = yes }
+}
+
+dsc_has_any_sgui = {
+	scope = character
+	is_shown = {
+		OR = {
+			has_variable = dsc_a1
+			has_variable = dsc_a2
+			has_variable = dsc_a3
+			has_variable = dsc_a4
+			has_variable = dsc_a5
+			has_variable = dsc_a6
+		}
+	}
+}
+
+# is_shown = "an alarm fired and the GUI hasn't paused yet". The effect clears it.
+dsc_pause_sgui = {
+	scope = character
+	is_shown = { has_variable = dsc_pause_pending }
+	effect = { remove_variable = dsc_pause_pending }
+}
+
+dsc_slot1_sgui = {
+	scope = character
+	is_shown = { has_variable = dsc_a1 }
+	effect = { dsc_remove_slot = { N = 1 } }
+}
+
+dsc_slot2_sgui = {
+	scope = character
+	is_shown = { has_variable = dsc_a2 }
+	effect = { dsc_remove_slot = { N = 2 } }
+}
+
+dsc_slot3_sgui = {
+	scope = character
+	is_shown = { has_variable = dsc_a3 }
+	effect = { dsc_remove_slot = { N = 3 } }
+}
+
+dsc_slot4_sgui = {
+	scope = character
+	is_shown = { has_variable = dsc_a4 }
+	effect = { dsc_remove_slot = { N = 4 } }
+}
+
+dsc_slot5_sgui = {
+	scope = character
+	is_shown = { has_variable = dsc_a5 }
+	effect = { dsc_remove_slot = { N = 5 } }
+}
+
+dsc_slot6_sgui = {
+	scope = character
+	is_shown = { has_variable = dsc_a6 }
+	effect = { dsc_remove_slot = { N = 6 } }
+}
+
+dsc_y_up1_sgui = {
+	scope = character
+	effect = { dsc_pick_add = { Y = 1 M = 0 D = 0 } }
+}
+
+dsc_y_dn1_sgui = {
+	scope = character
+	effect = { dsc_pick_add = { Y = -1 M = 0 D = 0 } }
+}
+
+dsc_y_up10_sgui = {
+	scope = character
+	effect = { dsc_pick_add = { Y = 10 M = 0 D = 0 } }
+}
+
+dsc_y_dn10_sgui = {
+	scope = character
+	effect = { dsc_pick_add = { Y = -10 M = 0 D = 0 } }
+}
+
+dsc_m_up1_sgui = {
+	scope = character
+	effect = { dsc_pick_add = { Y = 0 M = 1 D = 0 } }
+}
+
+dsc_m_dn1_sgui = {
+	scope = character
+	effect = { dsc_pick_add = { Y = 0 M = -1 D = 0 } }
+}
+
+dsc_d_up1_sgui = {
+	scope = character
+	effect = { dsc_pick_add = { Y = 0 M = 0 D = 1 } }
+}
+
+dsc_d_dn1_sgui = {
+	scope = character
+	effect = { dsc_pick_add = { Y = 0 M = 0 D = -1 } }
+}
+
+dsc_d_up5_sgui = {
+	scope = character
+	effect = { dsc_pick_add = { Y = 0 M = 0 D = 5 } }
+}
+
+dsc_d_dn5_sgui = {
+	scope = character
+	effect = { dsc_pick_add = { Y = 0 M = 0 D = -5 } }
+}
+
+dsc_add_1w_sgui = {
+	scope = character
+	effect = { dsc_pick_add = { Y = 0 M = 0 D = 7 } }
+}
+
+dsc_add_1m_sgui = {
+	scope = character
+	effect = { dsc_pick_add = { Y = 0 M = 1 D = 0 } }
+}
+
+dsc_add_3m_sgui = {
+	scope = character
+	effect = { dsc_pick_add = { Y = 0 M = 3 D = 0 } }
+}
+
+dsc_add_6m_sgui = {
+	scope = character
+	effect = { dsc_pick_add = { Y = 0 M = 6 D = 0 } }
+}
+
+dsc_add_1y_sgui = {
+	scope = character
+	effect = { dsc_pick_add = { Y = 1 M = 0 D = 0 } }
+}
+
+dsc_add_5y_sgui = {
+	scope = character
+	effect = { dsc_pick_add = { Y = 5 M = 0 D = 0 } }
+}
+
+dsc_add_10y_sgui = {
+	scope = character
+	effect = { dsc_pick_add = { Y = 10 M = 0 D = 0 } }
+}
+
+dsc_reason_none_sgui = {
+	scope = character
+	effect = { remove_variable = dsc_pr }
+}
+
+dsc_has_reason_sgui = {
+	scope = character
+	is_shown = { has_variable = dsc_pr }
+}
+
+dsc_reason_pregnancy_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:pregnancy } }
+}
+
+dsc_reason_adulthood_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:adulthood } }
+}
+
+dsc_reason_education_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:education } }
+}
+
+dsc_reason_marriage_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:marriage } }
+}
+
+dsc_reason_birthday_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:birthday } }
+}
+
+dsc_reason_succession_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:succession } }
+}
+
+dsc_reason_scheme_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:scheme } }
+}
+
+dsc_reason_hook_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:hook } }
+}
+
+dsc_reason_prison_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:prison } }
+}
+
+dsc_reason_faction_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:faction } }
+}
+
+dsc_reason_stress_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:stress } }
+}
+
+dsc_reason_inspiration_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:inspiration } }
+}
+
+dsc_reason_truce_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:truce } }
+}
+
+dsc_reason_war_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:war } }
+}
+
+dsc_reason_siege_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:siege } }
+}
+
+dsc_reason_army_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:army } }
+}
+
+dsc_reason_travel_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:travel } }
+}
+
+dsc_reason_raid_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:raid } }
+}
+
+dsc_reason_feast_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:feast } }
+}
+
+dsc_reason_tournament_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:tournament } }
+}
+
+dsc_reason_hunt_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:hunt } }
+}
+
+dsc_reason_pilgrimage_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:pilgrimage } }
+}
+
+dsc_reason_trip_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:trip } }
+}
+
+dsc_reason_activity_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:activity } }
+}
+
+dsc_reason_council_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:council } }
+}
+
+dsc_reason_decision_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:decision } }
+}
+
+dsc_reason_building_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:building } }
+}
+
+dsc_reason_project_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:project } }
+}
+
+dsc_reason_tax_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:tax } }
+}
+
+dsc_reason_gold_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:gold } }
+}
+
+dsc_reason_epidemic_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:epidemic } }
+}
+
+dsc_reason_struggle_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:struggle } }
+}
+
+dsc_reason_inspect_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:inspect } }
+}
+
+dsc_reason_save_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:save } }
+}
+
+dsc_reason_rest_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:rest } }
+}
+
+dsc_reason_other_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_pr value = flag:other } }
+}
+
+dsc_slot1_has_reason_sgui = {
+	scope = character
+	is_shown = { has_variable = dsc_a1_r }
+}
+
+dsc_slot2_has_reason_sgui = {
+	scope = character
+	is_shown = { has_variable = dsc_a2_r }
+}
+
+dsc_slot3_has_reason_sgui = {
+	scope = character
+	is_shown = { has_variable = dsc_a3_r }
+}
+
+dsc_slot4_has_reason_sgui = {
+	scope = character
+	is_shown = { has_variable = dsc_a4_r }
+}
+
+dsc_slot5_has_reason_sgui = {
+	scope = character
+	is_shown = { has_variable = dsc_a5_r }
+}
+
+dsc_slot6_has_reason_sgui = {
+	scope = character
+	is_shown = { has_variable = dsc_a6_r }
+}
+
