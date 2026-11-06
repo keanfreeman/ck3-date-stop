@@ -76,9 +76,15 @@ def hourglass(img, cx, cy):
     for sx in (-1, 1):
         d.line([cx + sx * w, top, cx + sx * 6 * S, cy], fill=GOLD, width=lw)
         d.line([cx + sx * 6 * S, cy, cx + sx * w, bot], fill=GOLD, width=lw)
-    # Sand
-    d.polygon([cx - 34 * S, top + 18 * S, cx + 34 * S, top + 18 * S, cx + 4 * S, cy - 4 * S, cx - 4 * S, cy - 4 * S], fill=GOLD_LIGHT)
-    d.polygon([cx - 38 * S, bot - 12 * S, cx + 38 * S, bot - 12 * S, cx + 18 * S, bot - 34 * S, cx - 18 * S, bot - 34 * S], fill=GOLD_LIGHT)
+    # Sand: the same shape in both bulbs, mirrored about the neck, nearly filling each
+    inset = lw / 2 + 5 * S
+    def edge(y):  # glass half-width at y, minus the inset
+        return 6 * S + (w - 6 * S) * abs(y - cy) / h - inset
+    y_far, y_near = 16 * S, 11 * S  # distance from the plates / the neck, as offsets from cy
+    for sign in (-1, 1):
+        ya = cy + sign * (h - y_far)   # far edge of the sand (flat)
+        yb = cy + sign * y_near        # near edge, at the neck
+        d.polygon([cx - edge(ya), ya, cx + edge(ya), ya, cx + edge(yb), yb, cx - edge(yb), yb], fill=GOLD_LIGHT)
 
 
 def text(img):
