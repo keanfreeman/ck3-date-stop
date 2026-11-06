@@ -153,6 +153,12 @@ dsc_try_slot = {
 			limit = { has_variable = dsc_pr }
 			set_variable = { name = dsc_a$N$_r value = var:dsc_pr }
 		}
+		if = {
+			limit = { has_variable = dsc_prep }
+			set_variable = { name = dsc_a$N$_p value = var:dsc_prep }
+			# Day of month that monthly repeats return to (Jan 31 -> Feb 28 -> Mar 31).
+			set_variable = { name = dsc_a$N$_od value = var:dsc_pd }
+		}
 		set_variable = dsc_added
 	}
 }
@@ -189,6 +195,8 @@ dsc_remove_slot = {
 	remove_variable = dsc_a$N$_m
 	remove_variable = dsc_a$N$_d
 	remove_variable = dsc_a$N$_r
+	remove_variable = dsc_a$N$_p
+	remove_variable = dsc_a$N$_od
 }
 
 dsc_clear_all = {
@@ -196,6 +204,7 @@ dsc_clear_all = {
 for i in slots:
     eff += f"\tdsc_remove_slot = {{ N = {i} }}\n"
 eff += """	remove_variable = dsc_pr
+	remove_variable = dsc_prep
 }
 
 # Remembers the reason of a firing slot as dsc_fr_<key> so the popup can list it.
@@ -205,6 +214,78 @@ for k, _ in REASONS:
     eff += f"\tif = {{ limit = {{ var:dsc_a$N$_r ?= flag:{k} }} set_variable = dsc_fr_{k} }}\n"
 eff += """}
 
+# Moves a repeating slot forward by its period until it is after today.
+# Uses the picker's variables as scratch space, so it saves and restores them.
+dsc_reschedule = {
+	remove_variable = dsc_sv_ok
+	if = {
+		limit = { has_variable = dsc_py }
+		set_variable = { name = dsc_sv_y value = var:dsc_py }
+		set_variable = { name = dsc_sv_m value = var:dsc_pm }
+		set_variable = { name = dsc_sv_d value = var:dsc_pd }
+		set_variable = dsc_sv_ok
+	}
+	set_variable = { name = dsc_py value = var:dsc_a$N$_y }
+	set_variable = { name = dsc_pm value = var:dsc_a$N$_m }
+	set_variable = { name = dsc_pd value = var:dsc_a$N$_d }
+	set_variable = { name = dsc_rk value = var:dsc_a$N$ }
+	while = {
+		limit = { var:dsc_rk <= var:dsc_tkey }
+		if = {
+			limit = { var:dsc_a$N$_p = flag:weekly }
+			change_variable = { name = dsc_pd add = 7 }
+			dsc_normalize = yes
+		}
+		else_if = {
+			limit = { var:dsc_a$N$_p = flag:monthly }
+			change_variable = { name = dsc_pm add = 1 }
+			if = {
+				limit = { var:dsc_pm > 12 }
+				set_variable = { name = dsc_pm value = 1 }
+				change_variable = { name = dsc_py add = 1 }
+			}
+			set_variable = { name = dsc_pd value = var:dsc_a$N$_od }
+			dsc_dim = yes
+			if = {
+				limit = { var:dsc_pd > var:dsc_dim }
+				set_variable = { name = dsc_pd value = var:dsc_dim }
+			}
+		}
+		else = {
+			change_variable = { name = dsc_py add = 1 }
+		}
+		set_variable = {
+			name = dsc_rk
+			value = {
+				value = var:dsc_py
+				multiply = 10000
+				add = { value = var:dsc_pm multiply = 100 }
+				add = var:dsc_pd
+			}
+		}
+	}
+	set_variable = { name = dsc_a$N$ value = var:dsc_rk }
+	set_variable = { name = dsc_a$N$_y value = var:dsc_py }
+	set_variable = { name = dsc_a$N$_m value = var:dsc_pm }
+	set_variable = { name = dsc_a$N$_d value = var:dsc_pd }
+	if = {
+		limit = { has_variable = dsc_sv_ok }
+		set_variable = { name = dsc_py value = var:dsc_sv_y }
+		set_variable = { name = dsc_pm value = var:dsc_sv_m }
+		set_variable = { name = dsc_pd value = var:dsc_sv_d }
+	}
+	else = {
+		remove_variable = dsc_py
+		remove_variable = dsc_pm
+		remove_variable = dsc_pd
+	}
+	remove_variable = dsc_sv_ok
+	remove_variable = dsc_sv_y
+	remove_variable = dsc_sv_m
+	remove_variable = dsc_sv_d
+	remove_variable = dsc_rk
+}
+
 # Fires every alarm that is due (key <= today's key).
 dsc_fire_slot = {
 	if = {
@@ -213,7 +294,13 @@ dsc_fire_slot = {
 			var:dsc_a$N$ <= var:dsc_tkey
 		}
 		dsc_note_reason = { N = $N$ }
-		dsc_remove_slot = { N = $N$ }
+		if = {
+			limit = { has_variable = dsc_a$N$_p }
+			dsc_reschedule = { N = $N$ }
+		}
+		else = {
+			dsc_remove_slot = { N = $N$ }
+		}
 		set_variable = dsc_fired
 	}
 }
@@ -238,6 +325,11 @@ dsc_copy_slot = {
 		if = {
 			limit = { scope:dsc_from = { has_variable = dsc_a$N$_r } }
 			set_variable = { name = dsc_a$N$_r value = scope:dsc_from.var:dsc_a$N$_r }
+		}
+		if = {
+			limit = { scope:dsc_from = { has_variable = dsc_a$N$_p } }
+			set_variable = { name = dsc_a$N$_p value = scope:dsc_from.var:dsc_a$N$_p }
+			set_variable = { name = dsc_a$N$_od value = scope:dsc_from.var:dsc_a$N$_od }
 		}
 	}
 }
@@ -297,7 +389,7 @@ dsc_clear_sgui = {
 	scope = character
 	is_shown = {
 		OR = {
-""" + any_slot("\t\t\t") + "\t\t\thas_variable = dsc_pr\n" + """		}
+""" + any_slot("\t\t\t") + "\t\t\thas_variable = dsc_pr\n\t\t\thas_variable = dsc_prep\n" + """		}
 	}
 	effect = { dsc_clear_all = yes }
 }
@@ -352,6 +444,29 @@ dsc_has_reason_sgui = {
 }
 
 """
+for m in ("weekly", "monthly", "yearly"):
+    sg += f"""dsc_repeat_{m}_sgui = {{
+	scope = character
+	effect = {{ set_variable = {{ name = dsc_prep value = flag:{m} }} }}
+}}
+
+dsc_repeat_is_{m}_sgui = {{
+	scope = character
+	is_shown = {{ var:dsc_prep ?= flag:{m} }}
+}}
+
+"""
+sg += """dsc_repeat_none_sgui = {
+	scope = character
+	effect = { remove_variable = dsc_prep }
+}
+
+dsc_repeat_is_none_sgui = {
+	scope = character
+	is_shown = { NOT = { has_variable = dsc_prep } }
+}
+
+"""
 for k, _ in REASONS:
     sg += f"""dsc_reason_{k}_sgui = {{
 	scope = character
@@ -363,6 +478,11 @@ for i in slots:
     sg += f"""dsc_slot{i}_has_reason_sgui = {{
 	scope = character
 	is_shown = {{ has_variable = dsc_a{i}_r }}
+}}
+
+dsc_slot{i}_has_repeat_sgui = {{
+	scope = character
+	is_shown = {{ has_variable = dsc_a{i}_p }}
 }}
 
 """
@@ -402,11 +522,16 @@ for i in slots:
 					visible = "[GetScriptedGui('dsc_slot{i}_sgui').IsShown( {SG} )]"
 					spacing = 6
 					text_single = {{
-						min_width = 90
+						min_width = 85
 						text = "[GetPlayer.MakeScope.Var('dsc_a{i}_y').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a{i}_m').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a{i}_d').GetValue|0]"
 					}}
 					text_single = {{
-						min_width = 190
+						min_width = 62
+						visible = "[GetScriptedGui('dsc_slot{i}_has_repeat_sgui').IsShown( {SG} )]"
+						text = "[Localize( Concatenate( 'DSC_REPEATS_', GetPlayer.MakeScope.Var('dsc_a{i}_p').GetFlagName ) )]"
+					}}
+					text_single = {{
+						min_width = 140
 						visible = "[GetScriptedGui('dsc_slot{i}_has_reason_sgui').IsShown( {SG} )]"
 						text = "[Localize( Concatenate( 'DSC_REASON_', GetPlayer.MakeScope.Var('dsc_a{i}_r').GetFlagName ) )]"
 					}}
@@ -417,6 +542,14 @@ for i in slots:
 					}}
 				}}
 """
+
+repeat_btns = ""
+for m in ("none", "weekly", "monthly", "yearly"):
+    repeat_btns += (
+        f'\t\t\t\tbutton_standard = {{ size = {{ 68 24 }} text = "DSC_REPEAT_{m}" tooltip = "DSC_REPEAT_TT" '
+        f"enabled = \"[Not( GetScriptedGui('dsc_repeat_is_{m}_sgui').IsShown( {SG} ) )]\" "
+        f"onclick = \"[GetScriptedGui('dsc_repeat_{m}_sgui').Execute( {SG} )]\" }}\n"
+    )
 
 # Reason picker: 3 columns of buttons, left of the main panel.
 cols = ""
@@ -584,6 +717,12 @@ widget = {{
 				}}
 			}}
 
+			### Repeat
+			hbox = {{
+				spacing = 4
+				text_single = {{ text = "DSC_REPEAT_LABEL" min_width = 60 align = nobaseline }}
+{repeat_btns}			}}
+
 			### Actions
 			hbox = {{
 				spacing = 6
@@ -734,6 +873,15 @@ loc = """l_english:
  DSC_LIST_HEADER:0 "Stops (year.month.day):"
  DSC_LIST_EMPTY:0 "No stops set."
  DSC_REASON_LABEL:0 "Reason"
+ DSC_REPEAT_LABEL:0 "Repeat"
+ DSC_REPEAT_none:0 "Off"
+ DSC_REPEAT_weekly:0 "Weekly"
+ DSC_REPEAT_monthly:0 "Monthly"
+ DSC_REPEAT_yearly:0 "Yearly"
+ DSC_REPEATS_weekly:0 "weekly"
+ DSC_REPEATS_monthly:0 "monthly"
+ DSC_REPEATS_yearly:0 "yearly"
+ DSC_REPEAT_TT:0 "After pausing, the stop sets itself again one week, month or year later. Remove it from the list to stop it repeating."
  DSC_REASON_NONE:0 "No reason (click to choose)"
  DSC_REASON_SHOWN:0 "[Localize( Concatenate( 'DSC_REASON_', GetPlayer.MakeScope.Var('dsc_pr').GetFlagName ) )]"
  DSC_REASON_TT:0 "Choose a reason to remind you why you set this stop."
@@ -753,7 +901,7 @@ write(
     """{
   "name": "Date Stop",
   "id": "date_stop_ck3",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "supported_game_version": "1.20.*",
   "short_description": "A button at the bottom right: pick dates and the game pauses when each one arrives.",
   "tags": ["Utilities", "Interface"],

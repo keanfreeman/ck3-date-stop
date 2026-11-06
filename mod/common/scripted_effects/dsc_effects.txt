@@ -109,6 +109,12 @@ dsc_try_slot = {
 			limit = { has_variable = dsc_pr }
 			set_variable = { name = dsc_a$N$_r value = var:dsc_pr }
 		}
+		if = {
+			limit = { has_variable = dsc_prep }
+			set_variable = { name = dsc_a$N$_p value = var:dsc_prep }
+			# Day of month that monthly repeats return to (Jan 31 -> Feb 28 -> Mar 31).
+			set_variable = { name = dsc_a$N$_od value = var:dsc_pd }
+		}
 		set_variable = dsc_added
 	}
 }
@@ -148,6 +154,8 @@ dsc_remove_slot = {
 	remove_variable = dsc_a$N$_m
 	remove_variable = dsc_a$N$_d
 	remove_variable = dsc_a$N$_r
+	remove_variable = dsc_a$N$_p
+	remove_variable = dsc_a$N$_od
 }
 
 dsc_clear_all = {
@@ -158,6 +166,7 @@ dsc_clear_all = {
 	dsc_remove_slot = { N = 5 }
 	dsc_remove_slot = { N = 6 }
 	remove_variable = dsc_pr
+	remove_variable = dsc_prep
 }
 
 # Remembers the reason of a firing slot as dsc_fr_<key> so the popup can list it.
@@ -200,6 +209,78 @@ dsc_note_reason = {
 	if = { limit = { var:dsc_a$N$_r ?= flag:other } set_variable = dsc_fr_other }
 }
 
+# Moves a repeating slot forward by its period until it is after today.
+# Uses the picker's variables as scratch space, so it saves and restores them.
+dsc_reschedule = {
+	remove_variable = dsc_sv_ok
+	if = {
+		limit = { has_variable = dsc_py }
+		set_variable = { name = dsc_sv_y value = var:dsc_py }
+		set_variable = { name = dsc_sv_m value = var:dsc_pm }
+		set_variable = { name = dsc_sv_d value = var:dsc_pd }
+		set_variable = dsc_sv_ok
+	}
+	set_variable = { name = dsc_py value = var:dsc_a$N$_y }
+	set_variable = { name = dsc_pm value = var:dsc_a$N$_m }
+	set_variable = { name = dsc_pd value = var:dsc_a$N$_d }
+	set_variable = { name = dsc_rk value = var:dsc_a$N$ }
+	while = {
+		limit = { var:dsc_rk <= var:dsc_tkey }
+		if = {
+			limit = { var:dsc_a$N$_p = flag:weekly }
+			change_variable = { name = dsc_pd add = 7 }
+			dsc_normalize = yes
+		}
+		else_if = {
+			limit = { var:dsc_a$N$_p = flag:monthly }
+			change_variable = { name = dsc_pm add = 1 }
+			if = {
+				limit = { var:dsc_pm > 12 }
+				set_variable = { name = dsc_pm value = 1 }
+				change_variable = { name = dsc_py add = 1 }
+			}
+			set_variable = { name = dsc_pd value = var:dsc_a$N$_od }
+			dsc_dim = yes
+			if = {
+				limit = { var:dsc_pd > var:dsc_dim }
+				set_variable = { name = dsc_pd value = var:dsc_dim }
+			}
+		}
+		else = {
+			change_variable = { name = dsc_py add = 1 }
+		}
+		set_variable = {
+			name = dsc_rk
+			value = {
+				value = var:dsc_py
+				multiply = 10000
+				add = { value = var:dsc_pm multiply = 100 }
+				add = var:dsc_pd
+			}
+		}
+	}
+	set_variable = { name = dsc_a$N$ value = var:dsc_rk }
+	set_variable = { name = dsc_a$N$_y value = var:dsc_py }
+	set_variable = { name = dsc_a$N$_m value = var:dsc_pm }
+	set_variable = { name = dsc_a$N$_d value = var:dsc_pd }
+	if = {
+		limit = { has_variable = dsc_sv_ok }
+		set_variable = { name = dsc_py value = var:dsc_sv_y }
+		set_variable = { name = dsc_pm value = var:dsc_sv_m }
+		set_variable = { name = dsc_pd value = var:dsc_sv_d }
+	}
+	else = {
+		remove_variable = dsc_py
+		remove_variable = dsc_pm
+		remove_variable = dsc_pd
+	}
+	remove_variable = dsc_sv_ok
+	remove_variable = dsc_sv_y
+	remove_variable = dsc_sv_m
+	remove_variable = dsc_sv_d
+	remove_variable = dsc_rk
+}
+
 # Fires every alarm that is due (key <= today's key).
 dsc_fire_slot = {
 	if = {
@@ -208,7 +289,13 @@ dsc_fire_slot = {
 			var:dsc_a$N$ <= var:dsc_tkey
 		}
 		dsc_note_reason = { N = $N$ }
-		dsc_remove_slot = { N = $N$ }
+		if = {
+			limit = { has_variable = dsc_a$N$_p }
+			dsc_reschedule = { N = $N$ }
+		}
+		else = {
+			dsc_remove_slot = { N = $N$ }
+		}
 		set_variable = dsc_fired
 	}
 }
@@ -270,6 +357,11 @@ dsc_copy_slot = {
 		if = {
 			limit = { scope:dsc_from = { has_variable = dsc_a$N$_r } }
 			set_variable = { name = dsc_a$N$_r value = scope:dsc_from.var:dsc_a$N$_r }
+		}
+		if = {
+			limit = { scope:dsc_from = { has_variable = dsc_a$N$_p } }
+			set_variable = { name = dsc_a$N$_p value = scope:dsc_from.var:dsc_a$N$_p }
+			set_variable = { name = dsc_a$N$_od value = scope:dsc_from.var:dsc_a$N$_od }
 		}
 	}
 }

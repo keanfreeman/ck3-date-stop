@@ -153,6 +153,17 @@ widget = {
 				}
 			}
 
+			### Repeat
+			flowcontainer = {
+				direction = horizontal
+				spacing = 4
+				text_single = { text = "DSC_REPEAT_LABEL" min_width = 60 align = nobaseline }
+				button_standard = { size = { 68 24 } text = "DSC_REPEAT_none" tooltip = "DSC_REPEAT_TT" enabled = "[Not( GetScriptedGui('dsc_repeat_is_none_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End ) )]" onclick = "[GetScriptedGui('dsc_repeat_none_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" }
+				button_standard = { size = { 68 24 } text = "DSC_REPEAT_weekly" tooltip = "DSC_REPEAT_TT" enabled = "[Not( GetScriptedGui('dsc_repeat_is_weekly_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End ) )]" onclick = "[GetScriptedGui('dsc_repeat_weekly_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" }
+				button_standard = { size = { 68 24 } text = "DSC_REPEAT_monthly" tooltip = "DSC_REPEAT_TT" enabled = "[Not( GetScriptedGui('dsc_repeat_is_monthly_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End ) )]" onclick = "[GetScriptedGui('dsc_repeat_monthly_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" }
+				button_standard = { size = { 68 24 } text = "DSC_REPEAT_yearly" tooltip = "DSC_REPEAT_TT" enabled = "[Not( GetScriptedGui('dsc_repeat_is_yearly_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End ) )]" onclick = "[GetScriptedGui('dsc_repeat_yearly_sgui').Execute( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]" }
+			}
+
 			### Actions
 			flowcontainer = {
 				direction = horizontal
@@ -196,11 +207,16 @@ widget = {
 					visible = "[GetScriptedGui('dsc_slot1_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
 					spacing = 6
 					text_single = {
-						min_width = 90
+						min_width = 85
 						text = "[GetPlayer.MakeScope.Var('dsc_a1_y').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a1_m').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a1_d').GetValue|0]"
 					}
 					text_single = {
-						min_width = 190
+						min_width = 62
+						visible = "[GetScriptedGui('dsc_slot1_has_repeat_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+						text = "[Localize( Concatenate( 'DSC_REPEATS_', GetPlayer.MakeScope.Var('dsc_a1_p').GetFlagName ) )]"
+					}
+					text_single = {
+						min_width = 140
 						visible = "[GetScriptedGui('dsc_slot1_has_reason_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
 						text = "[Localize( Concatenate( 'DSC_REASON_', GetPlayer.MakeScope.Var('dsc_a1_r').GetFlagName ) )]"
 					}
@@ -215,11 +231,16 @@ widget = {
 					visible = "[GetScriptedGui('dsc_slot2_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
 					spacing = 6
 					text_single = {
-						min_width = 90
+						min_width = 85
 						text = "[GetPlayer.MakeScope.Var('dsc_a2_y').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a2_m').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a2_d').GetValue|0]"
 					}
 					text_single = {
-						min_width = 190
+						min_width = 62
+						visible = "[GetScriptedGui('dsc_slot2_has_repeat_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+						text = "[Localize( Concatenate( 'DSC_REPEATS_', GetPlayer.MakeScope.Var('dsc_a2_p').GetFlagName ) )]"
+					}
+					text_single = {
+						min_width = 140
 						visible = "[GetScriptedGui('dsc_slot2_has_reason_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
 						text = "[Localize( Concatenate( 'DSC_REASON_', GetPlayer.MakeScope.Var('dsc_a2_r').GetFlagName ) )]"
 					}
@@ -234,11 +255,16 @@ widget = {
 					visible = "[GetScriptedGui('dsc_slot3_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
 					spacing = 6
 					text_single = {
-						min_width = 90
+						min_width = 85
 						text = "[GetPlayer.MakeScope.Var('dsc_a3_y').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a3_m').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a3_d').GetValue|0]"
 					}
 					text_single = {
-						min_width = 190
+						min_width = 62
+						visible = "[GetScriptedGui('dsc_slot3_has_repeat_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+						text = "[Localize( Concatenate( 'DSC_REPEATS_', GetPlayer.MakeScope.Var('dsc_a3_p').GetFlagName ) )]"
+					}
+					text_single = {
+						min_width = 140
 						visible = "[GetScriptedGui('dsc_slot3_has_reason_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
 						text = "[Localize( Concatenate( 'DSC_REASON_', GetPlayer.MakeScope.Var('dsc_a3_r').GetFlagName ) )]"
 					}
@@ -253,11 +279,16 @@ widget = {
 					visible = "[GetScriptedGui('dsc_slot4_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
 					spacing = 6
 					text_single = {
-						min_width = 90
+						min_width = 85
 						text = "[GetPlayer.MakeScope.Var('dsc_a4_y').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a4_m').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a4_d').GetValue|0]"
 					}
 					text_single = {
-						min_width = 190
+						min_width = 62
+						visible = "[GetScriptedGui('dsc_slot4_has_repeat_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+						text = "[Localize( Concatenate( 'DSC_REPEATS_', GetPlayer.MakeScope.Var('dsc_a4_p').GetFlagName ) )]"
+					}
+					text_single = {
+						min_width = 140
 						visible = "[GetScriptedGui('dsc_slot4_has_reason_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
 						text = "[Localize( Concatenate( 'DSC_REASON_', GetPlayer.MakeScope.Var('dsc_a4_r').GetFlagName ) )]"
 					}
@@ -272,11 +303,16 @@ widget = {
 					visible = "[GetScriptedGui('dsc_slot5_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
 					spacing = 6
 					text_single = {
-						min_width = 90
+						min_width = 85
 						text = "[GetPlayer.MakeScope.Var('dsc_a5_y').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a5_m').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a5_d').GetValue|0]"
 					}
 					text_single = {
-						min_width = 190
+						min_width = 62
+						visible = "[GetScriptedGui('dsc_slot5_has_repeat_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+						text = "[Localize( Concatenate( 'DSC_REPEATS_', GetPlayer.MakeScope.Var('dsc_a5_p').GetFlagName ) )]"
+					}
+					text_single = {
+						min_width = 140
 						visible = "[GetScriptedGui('dsc_slot5_has_reason_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
 						text = "[Localize( Concatenate( 'DSC_REASON_', GetPlayer.MakeScope.Var('dsc_a5_r').GetFlagName ) )]"
 					}
@@ -291,11 +327,16 @@ widget = {
 					visible = "[GetScriptedGui('dsc_slot6_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
 					spacing = 6
 					text_single = {
-						min_width = 90
+						min_width = 85
 						text = "[GetPlayer.MakeScope.Var('dsc_a6_y').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a6_m').GetValue|0].[GetPlayer.MakeScope.Var('dsc_a6_d').GetValue|0]"
 					}
 					text_single = {
-						min_width = 190
+						min_width = 62
+						visible = "[GetScriptedGui('dsc_slot6_has_repeat_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
+						text = "[Localize( Concatenate( 'DSC_REPEATS_', GetPlayer.MakeScope.Var('dsc_a6_p').GetFlagName ) )]"
+					}
+					text_single = {
+						min_width = 140
 						visible = "[GetScriptedGui('dsc_slot6_has_reason_sgui').IsShown( GuiScope.SetRoot( GetPlayer.MakeScope ).End )]"
 						text = "[Localize( Concatenate( 'DSC_REASON_', GetPlayer.MakeScope.Var('dsc_a6_r').GetFlagName ) )]"
 					}

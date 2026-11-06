@@ -4,7 +4,7 @@ Pick dates, and the game pauses when each one arrives. A clock icon in the time 
 
 Port of the [Victoria 3 Date Stop](https://github.com/keanfreeman/victoria3-date-stop) mod.
 
-<!-- Add the Steam Workshop link here after publishing. -->
+**[Subscribe on the Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3834520187)**
 
 ![Date Stop](mod/thumbnail.png)
 
@@ -13,9 +13,10 @@ Port of the [Victoria 3 Date Stop](https://github.com/keanfreeman/victoria3-date
 1. Click the clock icon left of the date in the bottom bar.
 2. Pick a date with the Year / Month / Day − and + buttons (Year ±1/±10, Day ±1/±5; days and months carry over). The quick buttons (**Today**, +1w, +1m, +3m, +6m, +1y, +5y, +10y) add to the chosen date and can be clicked repeatedly.
 3. Optionally click the **Reason** button and choose one of 36 presets (Truce ends, Pregnancy due, Siege, Council task, Save the game, ...). The ✕ beside it clears the reason.
-4. Click **Set stop**. The date must be in the future and not already set.
+4. Optionally set **Repeat** to Weekly, Monthly or Yearly. The stop then sets itself again after it fires.
+5. Click **Set stop**. The date must be in the future and not already set.
 
-Up to 6 stops are listed under the buttons, each with its reason. The ✕ beside a stop removes it, and **Clear all** removes every stop and the chosen reason. When a date arrives the game pauses and a popup lists the reasons of the stops that fired.
+Up to 6 stops are listed under the buttons, each with its reason and repeat. The ✕ beside a stop removes it (and stops it repeating), and **Clear all** removes every stop and the chosen reason and repeat. A monthly stop returns to its original day of the month (Jan 31 → Feb 28 → Mar 31). When a date arrives the game pauses and a popup lists the reasons of the stops that fired.
 
 Reasons are presets because a mod can't save typed text in a save game.
 
@@ -30,7 +31,7 @@ Stops belong to your player character and move with you when you switch characte
 
 ## Manual install
 
-Run `tools/install.sh`. It copies `mod/` to `~/.local/share/Paradox Interactive/Crusader Kings III/mod/Date Stop` and writes `date_stop_ck3.mod` beside it, which the CK3 launcher needs to list the mod. On Windows, copy `mod/` to `Documents/Paradox Interactive/Crusader Kings III/mod/Date Stop`, and create `Documents/Paradox Interactive/Crusader Kings III/mod/date_stop_ck3.mod` containing the contents of `mod/descriptor.mod` plus a `path="..."` line pointing at that folder.
+Run `tools/install.sh`. It copies `mod/` to `~/.local/share/Paradox Interactive/Crusader Kings III/mod/CK3 Date Stop` and writes `CK3 Date Stop.mod` beside it, which the CK3 launcher needs to list the mod. On Windows, copy `mod/` to `Documents/Paradox Interactive/Crusader Kings III/mod/CK3 Date Stop`, and create `Documents/Paradox Interactive/Crusader Kings III/mod/CK3 Date Stop.mod` containing the contents of `mod/descriptor.mod` plus a `path="..."` line pointing at that folder.
 
 ## How it works
 

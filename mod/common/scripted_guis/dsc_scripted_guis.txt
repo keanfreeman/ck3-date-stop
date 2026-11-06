@@ -53,6 +53,7 @@ dsc_clear_sgui = {
 			has_variable = dsc_a5
 			has_variable = dsc_a6
 			has_variable = dsc_pr
+			has_variable = dsc_prep
 		}
 	}
 	effect = { dsc_clear_all = yes }
@@ -208,6 +209,46 @@ dsc_reason_none_sgui = {
 dsc_has_reason_sgui = {
 	scope = character
 	is_shown = { has_variable = dsc_pr }
+}
+
+dsc_repeat_weekly_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_prep value = flag:weekly } }
+}
+
+dsc_repeat_is_weekly_sgui = {
+	scope = character
+	is_shown = { var:dsc_prep ?= flag:weekly }
+}
+
+dsc_repeat_monthly_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_prep value = flag:monthly } }
+}
+
+dsc_repeat_is_monthly_sgui = {
+	scope = character
+	is_shown = { var:dsc_prep ?= flag:monthly }
+}
+
+dsc_repeat_yearly_sgui = {
+	scope = character
+	effect = { set_variable = { name = dsc_prep value = flag:yearly } }
+}
+
+dsc_repeat_is_yearly_sgui = {
+	scope = character
+	is_shown = { var:dsc_prep ?= flag:yearly }
+}
+
+dsc_repeat_none_sgui = {
+	scope = character
+	effect = { remove_variable = dsc_prep }
+}
+
+dsc_repeat_is_none_sgui = {
+	scope = character
+	is_shown = { NOT = { has_variable = dsc_prep } }
 }
 
 dsc_reason_pregnancy_sgui = {
@@ -395,9 +436,19 @@ dsc_slot1_has_reason_sgui = {
 	is_shown = { has_variable = dsc_a1_r }
 }
 
+dsc_slot1_has_repeat_sgui = {
+	scope = character
+	is_shown = { has_variable = dsc_a1_p }
+}
+
 dsc_slot2_has_reason_sgui = {
 	scope = character
 	is_shown = { has_variable = dsc_a2_r }
+}
+
+dsc_slot2_has_repeat_sgui = {
+	scope = character
+	is_shown = { has_variable = dsc_a2_p }
 }
 
 dsc_slot3_has_reason_sgui = {
@@ -405,9 +456,19 @@ dsc_slot3_has_reason_sgui = {
 	is_shown = { has_variable = dsc_a3_r }
 }
 
+dsc_slot3_has_repeat_sgui = {
+	scope = character
+	is_shown = { has_variable = dsc_a3_p }
+}
+
 dsc_slot4_has_reason_sgui = {
 	scope = character
 	is_shown = { has_variable = dsc_a4_r }
+}
+
+dsc_slot4_has_repeat_sgui = {
+	scope = character
+	is_shown = { has_variable = dsc_a4_p }
 }
 
 dsc_slot5_has_reason_sgui = {
@@ -415,8 +476,18 @@ dsc_slot5_has_reason_sgui = {
 	is_shown = { has_variable = dsc_a5_r }
 }
 
+dsc_slot5_has_repeat_sgui = {
+	scope = character
+	is_shown = { has_variable = dsc_a5_p }
+}
+
 dsc_slot6_has_reason_sgui = {
 	scope = character
 	is_shown = { has_variable = dsc_a6_r }
+}
+
+dsc_slot6_has_repeat_sgui = {
+	scope = character
+	is_shown = { has_variable = dsc_a6_p }
 }
 
